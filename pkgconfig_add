@@ -1,2 +1,11 @@
 # This file contains additional pkgconfig build requirements that did
 # not get picked up automatically. One name per line, no whitespace.
+egl
+gbm
+lcms2
+libdrm
+libpipewire-0.3
+wayland-client
+wayland-protocols
+x11-xcb
+xkbcommon
