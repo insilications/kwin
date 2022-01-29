@@ -1,5 +1,6 @@
 PKG_NAME := kwin
-URL = https://download.kde.org/stable/plasma/5.23.5/kwin-5.23.5.tar.xz
+URL = https://invent.kde.org/plasma/kwin.git
 ARCHIVES = 
+ARCHIVES_GIT = 
 
 include ../common/Makefile.common
