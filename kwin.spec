@@ -5,12 +5,18 @@
 %define keepstatic 1
 Name     : kwin
 Version  : 5.23.5
-Release  : 307
+Release  : 308
 URL      : https://download.kde.org/stable/plasma/5.23.5/kwin-5.23.5.tar.xz
 Source0  : https://download.kde.org/stable/plasma/5.23.5/kwin-5.23.5.tar.xz
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : GPL-2.0
+Requires: kwin-bin = %{version}-%{release}
+Requires: kwin-data = %{version}-%{release}
+Requires: kwin-lib = %{version}-%{release}
+Requires: kwin-libexec = %{version}-%{release}
+Requires: kwin-locales = %{version}-%{release}
+Requires: kwin-services = %{version}-%{release}
 BuildRequires : NetworkManager-dev
 BuildRequires : SDL-dev
 BuildRequires : SDL2-dev
@@ -58,10 +64,6 @@ BuildRequires : elfutils-dev
 BuildRequires : expat-dev
 BuildRequires : expat-staticdev
 BuildRequires : extra-cmake-modules
-BuildRequires : extra-cmake-modules pkgconfig(egl)
-BuildRequires : extra-cmake-modules pkgconfig(wayland-client)
-BuildRequires : extra-cmake-modules pkgconfig(x11-xcb)
-BuildRequires : extra-cmake-modules qtwayland-dev
 BuildRequires : extra-cmake-modules-data
 BuildRequires : fftw-dev
 BuildRequires : findutils
@@ -164,7 +166,6 @@ BuildRequires : libICE-dev
 BuildRequires : libSM-dev
 BuildRequires : libX11-data
 BuildRequires : libX11-dev
-BuildRequires : libX11-dev libICE-dev libSM-dev libXau-dev libXcomposite-dev libXcursor-dev libXdamage-dev libXdmcp-dev libXext-dev libXfixes-dev libXft-dev libXi-dev libXinerama-dev libXi-dev libXmu-dev libXpm-dev libXrandr-dev libXrender-dev libXres-dev libXScrnSaver-dev libXt-dev libXtst-dev libXv-dev libXxf86vm-dev
 BuildRequires : libX11-lib
 BuildRequires : libXScrnSaver
 BuildRequires : libXScrnSaver-dev
@@ -428,6 +429,80 @@ Aurorae is a themeable window decoration for KWin.
 It supports theme files consisting of several SVG files for decoration and buttons. Themes can be
 installed and selected directly in the configuration module of KWin decorations.
 
+%package bin
+Summary: bin components for the kwin package.
+Group: Binaries
+Requires: kwin-data = %{version}-%{release}
+Requires: kwin-libexec = %{version}-%{release}
+Requires: kwin-services = %{version}-%{release}
+
+%description bin
+bin components for the kwin package.
+
+
+%package data
+Summary: data components for the kwin package.
+Group: Data
+
+%description data
+data components for the kwin package.
+
+
+%package dev
+Summary: dev components for the kwin package.
+Group: Development
+Requires: kwin-lib = %{version}-%{release}
+Requires: kwin-bin = %{version}-%{release}
+Requires: kwin-data = %{version}-%{release}
+Provides: kwin-devel = %{version}-%{release}
+Requires: kwin = %{version}-%{release}
+
+%description dev
+dev components for the kwin package.
+
+
+%package doc
+Summary: doc components for the kwin package.
+Group: Documentation
+
+%description doc
+doc components for the kwin package.
+
+
+%package lib
+Summary: lib components for the kwin package.
+Group: Libraries
+Requires: kwin-data = %{version}-%{release}
+Requires: kwin-libexec = %{version}-%{release}
+
+%description lib
+lib components for the kwin package.
+
+
+%package libexec
+Summary: libexec components for the kwin package.
+Group: Default
+
+%description libexec
+libexec components for the kwin package.
+
+
+%package locales
+Summary: locales components for the kwin package.
+Group: Default
+
+%description locales
+locales components for the kwin package.
+
+
+%package services
+Summary: services components for the kwin package.
+Group: Systemd services
+
+%description services
+services components for the kwin package.
+
+
 %prep
 %setup -q -n kwin-5.23.5
 cd %{_builddir}/kwin-5.23.5
@@ -438,7 +513,7 @@ unset https_proxy
 unset no_proxy
 export SSL_CERT_FILE=/var/cache/ca-certs/anchors/ca-certificates.crt
 export LANG=C.UTF-8
-export SOURCE_DATE_EPOCH=1643469794
+export SOURCE_DATE_EPOCH=1643471209
 mkdir -p clr-build
 pushd clr-build
 export GCC_IGNORE_WERROR=1
@@ -517,21 +592,21 @@ export GTK_USE_PORTAL=1
 export DESKTOP_SESSION=plasma
 ## altflags_pgo end
 
-echo PGO Phase 1
-export CFLAGS="${CFLAGS_GENERATE}"
-export CXXFLAGS="${CXXFLAGS_GENERATE}"
-export FFLAGS="${FFLAGS_GENERATE}"
-export FCFLAGS="${FCFLAGS_GENERATE}"
-export LDFLAGS="${LDFLAGS_GENERATE}"
-export ASMFLAGS="${ASMFLAGS_GENERATE}"
-export LIBS="${LIBS_GENERATE}"
+echo PGO Phase 2
+export CFLAGS="${CFLAGS_USE}"
+export CXXFLAGS="${CXXFLAGS_USE}"
+export FFLAGS="${FFLAGS_USE}"
+export FCFLAGS="${FCFLAGS_USE}"
+export LDFLAGS="${LDFLAGS_USE}"
+export ASMFLAGS="${ASMFLAGS_USE}"
+export LIBS="${LIBS_USE}"
  %cmake .. -DKDE_INSTALL_CONFDIR=/usr/share/xdg \
 -DBUILD_TESTING:BOOL=OFF
 make  %{?_smp_mflags}    V=1 VERBOSE=1
 popd
 
 %install
-export SOURCE_DATE_EPOCH=1643469794
+export SOURCE_DATE_EPOCH=1643471209
 rm -rf %{buildroot}
 export GCC_IGNORE_WERROR=1
 export AR=gcc-ar
@@ -608,16 +683,629 @@ export QT_FONT_DPI=88
 export GTK_USE_PORTAL=1
 export DESKTOP_SESSION=plasma
 ## altflags_pgo end
-export CFLAGS="${CFLAGS_GENERATE}"
-export CXXFLAGS="${CXXFLAGS_GENERATE}"
-export FFLAGS="${FFLAGS_GENERATE}"
-export FCFLAGS="${FCFLAGS_GENERATE}"
-export LDFLAGS="${LDFLAGS_GENERATE}"
-export ASMFLAGS="${ASMFLAGS_GENERATE}"
-export LIBS="${LIBS_GENERATE}"
+export CFLAGS="${CFLAGS_USE}"
+export CXXFLAGS="${CXXFLAGS_USE}"
+export FFLAGS="${FFLAGS_USE}"
+export FCFLAGS="${FCFLAGS_USE}"
+export LDFLAGS="${LDFLAGS_USE}"
+export ASMFLAGS="${ASMFLAGS_USE}"
+export LIBS="${LIBS_USE}"
 pushd clr-build
 %make_install
 popd
+%find_lang kcm_kwindecoration
+%find_lang kcm_kwinrules
+%find_lang kcmkwm
+%find_lang kwin
+%find_lang kwin_clients
+%find_lang kcm-kwin-scripts
+%find_lang kcm_kwin_effects
+%find_lang kcm_kwin_virtualdesktops
+%find_lang kcm_kwintabbox
+%find_lang kcm_virtualkeyboard
+%find_lang kcmkwincommon
+%find_lang kcmkwincompositing
+%find_lang kcmkwinscreenedges
+%find_lang kwin_effects
+%find_lang kwin_scripting
+%find_lang kwin_scripts
 
 %files
+%defattr(-,root,root,-)
+
+%files bin
+%defattr(-,root,root,-)
+/usr/bin/kwin_wayland
+/usr/bin/kwin_wayland_wrapper
+/usr/bin/kwin_x11
+/usr/lib64/kconf_update_bin/kwin5_update_default_rules
+
+%files data
+%defattr(-,root,root,-)
+/usr/share/config.kcfg/kwin.kcfg
+/usr/share/config.kcfg/kwin_colorcorrect.kcfg
+/usr/share/config.kcfg/kwindecorationsettings.kcfg
+/usr/share/config.kcfg/virtualdesktopssettings.kcfg
+/usr/share/dbus-1/interfaces/org.kde.KWin.Plugins.xml
+/usr/share/dbus-1/interfaces/org.kde.KWin.VirtualDesktopManager.xml
+/usr/share/dbus-1/interfaces/org.kde.KWin.xml
+/usr/share/dbus-1/interfaces/org.kde.kwin.ColorCorrect.xml
+/usr/share/dbus-1/interfaces/org.kde.kwin.Compositing.xml
+/usr/share/dbus-1/interfaces/org.kde.kwin.Effects.xml
+/usr/share/dbus-1/interfaces/org.kde.kwin.VirtualKeyboard.xml
+/usr/share/icons/hicolor/16x16/apps/kwin.png
+/usr/share/icons/hicolor/32x32/apps/kwin.png
+/usr/share/icons/hicolor/48x48/apps/kwin.png
+/usr/share/icons/hicolor/scalable/apps/kwin.svgz
+/usr/share/kconf_update/kwin-5.16-auto-bordersize.sh
+/usr/share/kconf_update/kwin-5.18-move-animspeed.py
+/usr/share/kconf_update/kwin-5.21-desktop-grid-click-behavior.py
+/usr/share/kconf_update/kwin-5.21-no-swap-encourage.py
+/usr/share/kconf_update/kwin-5.23-disable-translucency-effect.sh
+/usr/share/kconf_update/kwin-5.23-remove-cover-switch.py
+/usr/share/kconf_update/kwin-5.23-remove-cubeslide.py
+/usr/share/kconf_update/kwin-5.23-remove-flip-switch.py
+/usr/share/kconf_update/kwin-5.23-remove-xrender-backend.py
+/usr/share/kconf_update/kwin.upd
+/usr/share/kconf_update/kwinrules-5.19-placement.pl
+/usr/share/kconf_update/kwinrules-5.23-virtual-desktop-ids.py
+/usr/share/kconf_update/kwinrules.upd
+/usr/share/knotifications5/kwin.notifyrc
+/usr/share/knsrcfiles/aurorae.knsrc
+/usr/share/knsrcfiles/kwineffect.knsrc
+/usr/share/knsrcfiles/kwinscripts.knsrc
+/usr/share/knsrcfiles/kwinswitcher.knsrc
+/usr/share/knsrcfiles/window-decorations.knsrc
+/usr/share/kpackage/kcms/kcm_kwin_effects/contents/ui/Effect.qml
+/usr/share/kpackage/kcms/kcm_kwin_effects/contents/ui/Video.qml
+/usr/share/kpackage/kcms/kcm_kwin_effects/contents/ui/main.qml
+/usr/share/kpackage/kcms/kcm_kwin_effects/metadata.desktop
+/usr/share/kpackage/kcms/kcm_kwin_effects/metadata.json
+/usr/share/kpackage/kcms/kcm_kwin_virtualdesktops/contents/ui/main.qml
+/usr/share/kpackage/kcms/kcm_kwin_virtualdesktops/metadata.desktop
+/usr/share/kpackage/kcms/kcm_kwin_virtualdesktops/metadata.json
+/usr/share/kpackage/kcms/kcm_kwindecoration/contents/ui/ButtonGroup.qml
+/usr/share/kpackage/kcms/kcm_kwindecoration/contents/ui/Buttons.qml
+/usr/share/kpackage/kcms/kcm_kwindecoration/contents/ui/Themes.qml
+/usr/share/kpackage/kcms/kcm_kwindecoration/contents/ui/main.qml
+/usr/share/kpackage/kcms/kcm_kwindecoration/metadata.desktop
+/usr/share/kpackage/kcms/kcm_kwindecoration/metadata.json
+/usr/share/kpackage/kcms/kcm_kwinrules/contents/ui/FileDialogLoader.qml
+/usr/share/kpackage/kcms/kcm_kwinrules/contents/ui/OptionsComboBox.qml
+/usr/share/kpackage/kcms/kcm_kwinrules/contents/ui/RuleItemDelegate.qml
+/usr/share/kpackage/kcms/kcm_kwinrules/contents/ui/RulesEditor.qml
+/usr/share/kpackage/kcms/kcm_kwinrules/contents/ui/RulesList.qml
+/usr/share/kpackage/kcms/kcm_kwinrules/contents/ui/ValueEditor.qml
+/usr/share/kpackage/kcms/kcm_kwinrules/metadata.desktop
+/usr/share/kpackage/kcms/kcm_kwinrules/metadata.json
+/usr/share/kpackage/kcms/kcm_virtualkeyboard/contents/ui/main.qml
+/usr/share/kpackage/kcms/kcm_virtualkeyboard/metadata.desktop
+/usr/share/kpackage/kcms/kcm_virtualkeyboard/metadata.json
+/usr/share/krunner/dbusplugins/kwin-runner-windows.desktop
+/usr/share/kservices5/kcm_kwin_effects.desktop
+/usr/share/kservices5/kcm_kwin_virtualdesktops.desktop
+/usr/share/kservices5/kcm_kwinrules.desktop
+/usr/share/kservices5/kcm_virtualkeyboard.desktop
+/usr/share/kservices5/kwin-script-videowall.desktop
+/usr/share/kservices5/kwin/kwin4_decoration_qml_plastik.desktop
+/usr/share/kservices5/kwincompositing.desktop
+/usr/share/kservices5/kwindecoration.desktop
+/usr/share/kservices5/kwinoptions.desktop
+/usr/share/kservices5/kwinscreenedges.desktop
+/usr/share/kservices5/kwinscripts.desktop
+/usr/share/kservices5/kwintabbox.desktop
+/usr/share/kservices5/kwintouchscreen.desktop
+/usr/share/kservicetypes5/kwindecoration.desktop
+/usr/share/kservicetypes5/kwindesktopswitcher.desktop
+/usr/share/kservicetypes5/kwineffect.desktop
+/usr/share/kservicetypes5/kwinscript.desktop
+/usr/share/kservicetypes5/kwinwindowswitcher.desktop
+/usr/share/kwin/aurorae/AppMenuButton.qml
+/usr/share/kwin/aurorae/AuroraeButton.qml
+/usr/share/kwin/aurorae/AuroraeButtonGroup.qml
+/usr/share/kwin/aurorae/AuroraeMaximizeButton.qml
+/usr/share/kwin/aurorae/Decoration.qml
+/usr/share/kwin/aurorae/DecorationButton.qml
+/usr/share/kwin/aurorae/MenuButton.qml
+/usr/share/kwin/aurorae/aurorae.qml
+/usr/share/kwin/decorations/kwin4_decoration_qml_plastik/contents/config/main.xml
+/usr/share/kwin/decorations/kwin4_decoration_qml_plastik/contents/ui/PlastikButton.qml
+/usr/share/kwin/decorations/kwin4_decoration_qml_plastik/contents/ui/config.ui
+/usr/share/kwin/decorations/kwin4_decoration_qml_plastik/contents/ui/main.qml
+/usr/share/kwin/decorations/kwin4_decoration_qml_plastik/metadata.desktop
+/usr/share/kwin/effects/desktopgrid/main.qml
+/usr/share/kwin/effects/kwin4_effect_dialogparent/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_dialogparent/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_dialogparent/metadata.json
+/usr/share/kwin/effects/kwin4_effect_dimscreen/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_dimscreen/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_dimscreen/metadata.json
+/usr/share/kwin/effects/kwin4_effect_eyeonscreen/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_eyeonscreen/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_eyeonscreen/metadata.json
+/usr/share/kwin/effects/kwin4_effect_fade/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_fade/contents/config/main.xml
+/usr/share/kwin/effects/kwin4_effect_fade/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_fade/metadata.json
+/usr/share/kwin/effects/kwin4_effect_fadedesktop/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_fadedesktop/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_fadedesktop/metadata.json
+/usr/share/kwin/effects/kwin4_effect_fadingpopups/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_fadingpopups/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_fadingpopups/metadata.json
+/usr/share/kwin/effects/kwin4_effect_frozenapp/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_frozenapp/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_frozenapp/metadata.json
+/usr/share/kwin/effects/kwin4_effect_fullscreen/contents/code/fullscreen.js
+/usr/share/kwin/effects/kwin4_effect_fullscreen/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_fullscreen/metadata.json
+/usr/share/kwin/effects/kwin4_effect_login/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_login/contents/config/main.xml
+/usr/share/kwin/effects/kwin4_effect_login/contents/ui/config.ui
+/usr/share/kwin/effects/kwin4_effect_login/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_login/metadata.json
+/usr/share/kwin/effects/kwin4_effect_logout/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_logout/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_logout/metadata.json
+/usr/share/kwin/effects/kwin4_effect_maximize/contents/code/maximize.js
+/usr/share/kwin/effects/kwin4_effect_maximize/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_maximize/metadata.json
+/usr/share/kwin/effects/kwin4_effect_morphingpopups/contents/code/morphingpopups.js
+/usr/share/kwin/effects/kwin4_effect_morphingpopups/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_morphingpopups/metadata.json
+/usr/share/kwin/effects/kwin4_effect_scale/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_scale/contents/config/main.xml
+/usr/share/kwin/effects/kwin4_effect_scale/contents/ui/config.ui
+/usr/share/kwin/effects/kwin4_effect_scale/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_scale/metadata.json
+/usr/share/kwin/effects/kwin4_effect_sessionquit/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_sessionquit/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_sessionquit/metadata.json
+/usr/share/kwin/effects/kwin4_effect_squash/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_squash/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_squash/metadata.json
+/usr/share/kwin/effects/kwin4_effect_translucency/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_translucency/contents/config/main.xml
+/usr/share/kwin/effects/kwin4_effect_translucency/contents/ui/config.ui
+/usr/share/kwin/effects/kwin4_effect_translucency/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_translucency/metadata.json
+/usr/share/kwin/effects/kwin4_effect_windowaperture/contents/code/main.js
+/usr/share/kwin/effects/kwin4_effect_windowaperture/metadata.desktop
+/usr/share/kwin/effects/kwin4_effect_windowaperture/metadata.json
+/usr/share/kwin/effects/overview/qml/ScreenView.qml
+/usr/share/kwin/effects/overview/qml/WindowHeap.qml
+/usr/share/kwin/effects/presentwindows/main.qml
+/usr/share/kwin/kcm_kwintabbox/dolphin.png
+/usr/share/kwin/kcm_kwintabbox/kmail.png
+/usr/share/kwin/kcm_kwintabbox/konqueror.png
+/usr/share/kwin/kcm_kwintabbox/systemsettings.png
+/usr/share/kwin/onscreennotification/plasma/dummydata/osd.qml
+/usr/share/kwin/onscreennotification/plasma/main.qml
+/usr/share/kwin/outline/plasma/outline.qml
+/usr/share/kwin/scripts/desktopchangeosd/contents/ui/main.qml
+/usr/share/kwin/scripts/desktopchangeosd/contents/ui/osd.qml
+/usr/share/kwin/scripts/desktopchangeosd/metadata.desktop
+/usr/share/kwin/scripts/desktopchangeosd/metadata.json
+/usr/share/kwin/scripts/minimizeall/contents/code/main.js
+/usr/share/kwin/scripts/minimizeall/metadata.desktop
+/usr/share/kwin/scripts/minimizeall/metadata.json
+/usr/share/kwin/scripts/synchronizeskipswitcher/contents/code/main.js
+/usr/share/kwin/scripts/synchronizeskipswitcher/metadata.desktop
+/usr/share/kwin/scripts/synchronizeskipswitcher/metadata.json
+/usr/share/kwin/scripts/videowall/contents/code/main.js
+/usr/share/kwin/scripts/videowall/contents/config/main.xml
+/usr/share/kwin/scripts/videowall/contents/ui/config.ui
+/usr/share/kwin/scripts/videowall/metadata.desktop
+/usr/share/kwin/scripts/videowall/metadata.json
+/usr/share/kwin/tm_inner.png
+/usr/share/kwin/tm_outer.png
+/usr/share/qlogging-categories5/org_kde_kwin.categories
+
+%files dev
+%defattr(-,root,root,-)
+/usr/include/kwin_export.h
+/usr/include/kwinanimationeffect.h
+/usr/include/kwinconfig.h
+/usr/include/kwindeformeffect.h
+/usr/include/kwineffectquickview.h
+/usr/include/kwineffects.h
+/usr/include/kwineffects_export.h
+/usr/include/kwinglobals.h
+/usr/include/kwinglplatform.h
+/usr/include/kwingltexture.h
+/usr/include/kwinglutils.h
+/usr/include/kwinglutils_export.h
+/usr/include/kwinglutils_funcs.h
+/usr/include/kwinxrenderutils.h
+/usr/include/kwinxrenderutils_export.h
+/usr/lib64/cmake/KWinDBusInterface/KWinDBusInterfaceConfig.cmake
+/usr/lib64/cmake/KWinEffects/KWinEffectsConfig.cmake
+/usr/lib64/cmake/KWinEffects/KWinEffectsConfigVersion.cmake
+/usr/lib64/cmake/KWinEffects/KWinEffectsTargets-none.cmake
+/usr/lib64/cmake/KWinEffects/KWinEffectsTargets.cmake
+/usr/lib64/libkwin4_effect_builtins.so
+/usr/lib64/libkwineffects.so
+/usr/lib64/libkwinglutils.so
+/usr/lib64/libkwinxrenderutils.so
+
+%files doc
+%defattr(0644,root,root,0755)
+/usr/share/doc/HTML/ca/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/ca/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/ca/kcontrol/kwindecoration/button.png
+/usr/share/doc/HTML/ca/kcontrol/kwindecoration/decoration.png
+/usr/share/doc/HTML/ca/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/ca/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/ca/kcontrol/kwindecoration/main.png
+/usr/share/doc/HTML/ca/kcontrol/kwineffects/index.cache.bz2
+/usr/share/doc/HTML/ca/kcontrol/kwineffects/index.docbook
+/usr/share/doc/HTML/ca/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/ca/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/ca/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/ca/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/ca/kcontrol/kwintouchscreen/index.cache.bz2
+/usr/share/doc/HTML/ca/kcontrol/kwintouchscreen/index.docbook
+/usr/share/doc/HTML/ca/kcontrol/kwinvirtualkeyboard/index.cache.bz2
+/usr/share/doc/HTML/ca/kcontrol/kwinvirtualkeyboard/index.docbook
+/usr/share/doc/HTML/ca/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/ca/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/ca/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/ca/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/de/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/de/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/de/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/de/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/de/kcontrol/kwineffects/index.cache.bz2
+/usr/share/doc/HTML/de/kcontrol/kwineffects/index.docbook
+/usr/share/doc/HTML/de/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/de/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/de/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/de/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/de/kcontrol/kwintouchscreen/index.cache.bz2
+/usr/share/doc/HTML/de/kcontrol/kwintouchscreen/index.docbook
+/usr/share/doc/HTML/de/kcontrol/kwinvirtualkeyboard/index.cache.bz2
+/usr/share/doc/HTML/de/kcontrol/kwinvirtualkeyboard/index.docbook
+/usr/share/doc/HTML/de/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/de/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/de/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/de/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/en/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/en/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/en/kcontrol/kwindecoration/button.png
+/usr/share/doc/HTML/en/kcontrol/kwindecoration/configure.png
+/usr/share/doc/HTML/en/kcontrol/kwindecoration/decoration.png
+/usr/share/doc/HTML/en/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/en/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/en/kcontrol/kwindecoration/main.png
+/usr/share/doc/HTML/en/kcontrol/kwineffects/configure-effects.png
+/usr/share/doc/HTML/en/kcontrol/kwineffects/dialog-information.png
+/usr/share/doc/HTML/en/kcontrol/kwineffects/index.cache.bz2
+/usr/share/doc/HTML/en/kcontrol/kwineffects/index.docbook
+/usr/share/doc/HTML/en/kcontrol/kwineffects/video.png
+/usr/share/doc/HTML/en/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/en/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/en/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/en/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/en/kcontrol/kwintouchscreen/index.cache.bz2
+/usr/share/doc/HTML/en/kcontrol/kwintouchscreen/index.docbook
+/usr/share/doc/HTML/en/kcontrol/kwinvirtualkeyboard/index.cache.bz2
+/usr/share/doc/HTML/en/kcontrol/kwinvirtualkeyboard/index.docbook
+/usr/share/doc/HTML/en/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/en/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/en/kcontrol/windowspecific/Face-smile.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/akgregator-info.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/akregator-attributes.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/akregator-fav.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/config-win-behavior.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/emacs-attribute.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/emacs-info.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/focus-stealing-pop2top-attribute.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/en/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/en/kcontrol/windowspecific/knotes-attribute.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/knotes-info.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kopete-attribute-2.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kopete-chat-attribute.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kopete-chat-info.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kopete-info.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kwin-detect-window.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kwin-kopete-rules.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kwin-rule-editor.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kwin-rules-main-n-akregator.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kwin-rules-main.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kwin-rules-ordering.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kwin-window-attributes.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/kwin-window-matching.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/pager-4-desktops.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/tbird-compose-attribute.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/tbird-compose-info.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/tbird-main-attribute.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/tbird-main-info.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/tbird-reminder-attribute-2.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/tbird-reminder-info.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/window-matching-emacs.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/window-matching-init.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/window-matching-knotes.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/window-matching-kopete-chat.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/window-matching-kopete.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/window-matching-ready-akregator.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/window-matching-tbird-compose.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/window-matching-tbird-main.png
+/usr/share/doc/HTML/en/kcontrol/windowspecific/window-matching-tbird-reminder.png
+/usr/share/doc/HTML/es/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/es/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/fr/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/fr/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/fr/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/fr/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/fr/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/fr/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/fr/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/fr/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/id/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/id/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/id/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/id/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/id/kcontrol/kwineffects/index.cache.bz2
+/usr/share/doc/HTML/id/kcontrol/kwineffects/index.docbook
+/usr/share/doc/HTML/id/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/id/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/id/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/id/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/id/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/id/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/id/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/id/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/it/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/it/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/it/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/it/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/it/kcontrol/kwineffects/index.cache.bz2
+/usr/share/doc/HTML/it/kcontrol/kwineffects/index.docbook
+/usr/share/doc/HTML/it/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/it/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/it/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/it/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/it/kcontrol/kwintouchscreen/index.cache.bz2
+/usr/share/doc/HTML/it/kcontrol/kwintouchscreen/index.docbook
+/usr/share/doc/HTML/it/kcontrol/kwinvirtualkeyboard/index.cache.bz2
+/usr/share/doc/HTML/it/kcontrol/kwinvirtualkeyboard/index.docbook
+/usr/share/doc/HTML/it/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/it/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/it/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/it/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/nl/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/nl/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/nl/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/nl/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/nl/kcontrol/kwineffects/index.cache.bz2
+/usr/share/doc/HTML/nl/kcontrol/kwineffects/index.docbook
+/usr/share/doc/HTML/nl/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/nl/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/nl/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/nl/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/nl/kcontrol/kwintouchscreen/index.cache.bz2
+/usr/share/doc/HTML/nl/kcontrol/kwintouchscreen/index.docbook
+/usr/share/doc/HTML/nl/kcontrol/kwinvirtualkeyboard/index.cache.bz2
+/usr/share/doc/HTML/nl/kcontrol/kwinvirtualkeyboard/index.docbook
+/usr/share/doc/HTML/nl/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/nl/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/nl/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/nl/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/pt/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/pt/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/pt/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/pt/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/pt/kcontrol/kwineffects/index.cache.bz2
+/usr/share/doc/HTML/pt/kcontrol/kwineffects/index.docbook
+/usr/share/doc/HTML/pt/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/pt/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/pt/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/pt/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/pt/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/pt/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/pt/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/pt/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/pt_BR/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/pt_BR/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/pt_BR/kcontrol/kwindecoration/configure.png
+/usr/share/doc/HTML/pt_BR/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/pt_BR/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/pt_BR/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/pt_BR/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/pt_BR/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/pt_BR/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/pt_BR/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/pt_BR/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/pt_BR/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/pt_BR/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/ru/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/ru/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/ru/kcontrol/kwindecoration/button.png
+/usr/share/doc/HTML/ru/kcontrol/kwindecoration/configure.png
+/usr/share/doc/HTML/ru/kcontrol/kwindecoration/decoration.png
+/usr/share/doc/HTML/ru/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/ru/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/ru/kcontrol/kwindecoration/main.png
+/usr/share/doc/HTML/ru/kcontrol/kwineffects/index.cache.bz2
+/usr/share/doc/HTML/ru/kcontrol/kwineffects/index.docbook
+/usr/share/doc/HTML/ru/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/ru/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/ru/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/ru/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/ru/kcontrol/kwintouchscreen/index.cache.bz2
+/usr/share/doc/HTML/ru/kcontrol/kwintouchscreen/index.docbook
+/usr/share/doc/HTML/ru/kcontrol/kwinvirtualkeyboard/index.cache.bz2
+/usr/share/doc/HTML/ru/kcontrol/kwinvirtualkeyboard/index.docbook
+/usr/share/doc/HTML/ru/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/ru/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/akgregator-info.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/akregator-attributes.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/akregator-fav.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/config-win-behavior.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/emacs-attribute.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/emacs-info.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/focus-stealing-pop2top-attribute.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/knotes-attribute.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/knotes-info.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kopete-attribute-2.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kopete-chat-attribute.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kopete-chat-info.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kopete-info.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kwin-detect-window.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kwin-kopete-rules.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kwin-rule-editor.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kwin-rules-main-n-akregator.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kwin-rules-main.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kwin-rules-ordering.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kwin-window-attributes.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/kwin-window-matching.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/tbird-compose-attribute.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/tbird-compose-info.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/tbird-main-attribute.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/tbird-main-info.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/tbird-reminder-attribute-2.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/tbird-reminder-info.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/window-matching-emacs.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/window-matching-init.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/window-matching-knotes.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/window-matching-kopete-chat.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/window-matching-kopete.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/window-matching-ready-akregator.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/window-matching-tbird-compose.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/window-matching-tbird-main.png
+/usr/share/doc/HTML/ru/kcontrol/windowspecific/window-matching-tbird-reminder.png
+/usr/share/doc/HTML/sr/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/sr/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/sr@latin/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/sr@latin/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/sv/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/sv/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/sv/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/sv/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/sv/kcontrol/kwineffects/index.cache.bz2
+/usr/share/doc/HTML/sv/kcontrol/kwineffects/index.docbook
+/usr/share/doc/HTML/sv/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/sv/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/sv/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/sv/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/sv/kcontrol/kwintouchscreen/index.cache.bz2
+/usr/share/doc/HTML/sv/kcontrol/kwintouchscreen/index.docbook
+/usr/share/doc/HTML/sv/kcontrol/kwinvirtualkeyboard/index.cache.bz2
+/usr/share/doc/HTML/sv/kcontrol/kwinvirtualkeyboard/index.docbook
+/usr/share/doc/HTML/sv/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/sv/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/sv/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/sv/kcontrol/windowspecific/index.docbook
+/usr/share/doc/HTML/uk/kcontrol/desktop/index.cache.bz2
+/usr/share/doc/HTML/uk/kcontrol/desktop/index.docbook
+/usr/share/doc/HTML/uk/kcontrol/kwindecoration/button.png
+/usr/share/doc/HTML/uk/kcontrol/kwindecoration/decoration.png
+/usr/share/doc/HTML/uk/kcontrol/kwindecoration/index.cache.bz2
+/usr/share/doc/HTML/uk/kcontrol/kwindecoration/index.docbook
+/usr/share/doc/HTML/uk/kcontrol/kwindecoration/main.png
+/usr/share/doc/HTML/uk/kcontrol/kwineffects/index.cache.bz2
+/usr/share/doc/HTML/uk/kcontrol/kwineffects/index.docbook
+/usr/share/doc/HTML/uk/kcontrol/kwinscreenedges/index.cache.bz2
+/usr/share/doc/HTML/uk/kcontrol/kwinscreenedges/index.docbook
+/usr/share/doc/HTML/uk/kcontrol/kwintabbox/index.cache.bz2
+/usr/share/doc/HTML/uk/kcontrol/kwintabbox/index.docbook
+/usr/share/doc/HTML/uk/kcontrol/kwintouchscreen/index.cache.bz2
+/usr/share/doc/HTML/uk/kcontrol/kwintouchscreen/index.docbook
+/usr/share/doc/HTML/uk/kcontrol/kwinvirtualkeyboard/index.cache.bz2
+/usr/share/doc/HTML/uk/kcontrol/kwinvirtualkeyboard/index.docbook
+/usr/share/doc/HTML/uk/kcontrol/windowbehaviour/index.cache.bz2
+/usr/share/doc/HTML/uk/kcontrol/windowbehaviour/index.docbook
+/usr/share/doc/HTML/uk/kcontrol/windowspecific/index.cache.bz2
+/usr/share/doc/HTML/uk/kcontrol/windowspecific/index.docbook
+
+%files lib
+%defattr(-,root,root,-)
+/usr/lib64/libkcmkwincommon.so.5
+/usr/lib64/libkcmkwincommon.so.5.23.5
+/usr/lib64/libkwin.so.5
+/usr/lib64/libkwin.so.5.23.5
+/usr/lib64/libkwin4_effect_builtins.so.1
+/usr/lib64/libkwin4_effect_builtins.so.1.0.0
+/usr/lib64/libkwineffects.so.13
+/usr/lib64/libkwineffects.so.5.23.5
+/usr/lib64/libkwinglutils.so.13
+/usr/lib64/libkwinglutils.so.5.23.5
+/usr/lib64/libkwinxrenderutils.so.13
+/usr/lib64/libkwinxrenderutils.so.5.23.5
+/usr/lib64/qt5/plugins/kcm_kwin_scripts.so
+/usr/lib64/qt5/plugins/kcm_kwinoptions.so
+/usr/lib64/qt5/plugins/kcm_kwinscreenedges.so
+/usr/lib64/qt5/plugins/kcm_kwintabbox.so
+/usr/lib64/qt5/plugins/kcm_kwintouchscreen.so
+/usr/lib64/qt5/plugins/kcms/kcm_kwin_effects.so
+/usr/lib64/qt5/plugins/kcms/kcm_kwin_virtualdesktops.so
+/usr/lib64/qt5/plugins/kcms/kcm_kwindecoration.so
+/usr/lib64/qt5/plugins/kcms/kcm_kwinrules.so
+/usr/lib64/qt5/plugins/kcms/kcm_virtualkeyboard.so
+/usr/lib64/qt5/plugins/kpackage/packagestructure/kwin_aurorae.so
+/usr/lib64/qt5/plugins/kpackage/packagestructure/kwin_decoration.so
+/usr/lib64/qt5/plugins/kpackage/packagestructure/kwin_effect.so
+/usr/lib64/qt5/plugins/kpackage/packagestructure/kwin_script.so
+/usr/lib64/qt5/plugins/kpackage/packagestructure/kwin_windowswitcher.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kcm_kwin4_genericscripted.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_blur_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_desktopgrid_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_diminactive_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_glide_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_invert_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_lookingglass_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_magiclamp_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_magnifier_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_mouseclick_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_mousemark_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_overview_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_presentwindows_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_resize_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_showfps_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_showpaint_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_slide_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_thumbnailaside_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_trackmouse_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_windowgeometry_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_wobblywindows_config.so
+/usr/lib64/qt5/plugins/kwin/effects/configs/kwin_zoom_config.so
+/usr/lib64/qt5/plugins/kwin/plugins/colordintegration.so
+/usr/lib64/qt5/plugins/kwin/plugins/krunnerintegration.so
+/usr/lib64/qt5/plugins/kwin/plugins/libKWinNightColorPlugin.so
+/usr/lib64/qt5/plugins/kwincompositing.so
+/usr/lib64/qt5/plugins/org.kde.kdecoration2/kwin5_aurorae.so
+/usr/lib64/qt5/plugins/org.kde.kwin.platforms/KWinX11Platform.so
+/usr/lib64/qt5/plugins/org.kde.kwin.scenes/KWinSceneOpenGL.so
+/usr/lib64/qt5/plugins/org.kde.kwin.scenes/KWinSceneQPainter.so
+/usr/lib64/qt5/plugins/org.kde.kwin.waylandbackends/KWinWaylandDrmBackend.so
+/usr/lib64/qt5/plugins/org.kde.kwin.waylandbackends/KWinWaylandFbdevBackend.so
+/usr/lib64/qt5/plugins/org.kde.kwin.waylandbackends/KWinWaylandVirtualBackend.so
+/usr/lib64/qt5/plugins/org.kde.kwin.waylandbackends/KWinWaylandWaylandBackend.so
+/usr/lib64/qt5/plugins/org.kde.kwin.waylandbackends/KWinWaylandX11Backend.so
+/usr/lib64/qt5/qml/org/kde/kwin/decoration/AppMenuButton.qml
+/usr/lib64/qt5/qml/org/kde/kwin/decoration/ButtonGroup.qml
+/usr/lib64/qt5/qml/org/kde/kwin/decoration/Decoration.qml
+/usr/lib64/qt5/qml/org/kde/kwin/decoration/DecorationButton.qml
+/usr/lib64/qt5/qml/org/kde/kwin/decoration/MenuButton.qml
+/usr/lib64/qt5/qml/org/kde/kwin/decoration/libdecorationplugin.so
+/usr/lib64/qt5/qml/org/kde/kwin/decoration/qmldir
+/usr/lib64/qt5/qml/org/kde/kwin/decorations/plastik/libplastikplugin.so
+/usr/lib64/qt5/qml/org/kde/kwin/decorations/plastik/qmldir
+/usr/lib64/qt5/qml/org/kde/kwin/private/kdecoration/libkdecorationprivatedeclarative.so
+/usr/lib64/qt5/qml/org/kde/kwin/private/kdecoration/qmldir
+
+%files libexec
+%defattr(-,root,root,-)
+/usr/lib64/libexec/kwin-applywindowdecoration
+/usr/lib64/libexec/kwin_killer_helper
+/usr/lib64/libexec/kwin_rules_dialog
+
+%files services
+%defattr(-,root,root,-)
+/usr/lib/systemd/user/plasma-kwin_x11.service
+
+%files locales -f kcm_kwindecoration.lang -f kcm_kwinrules.lang -f kcmkwm.lang -f kwin.lang -f kwin_clients.lang -f kcm-kwin-scripts.lang -f kcm_kwin_effects.lang -f kcm_kwin_virtualdesktops.lang -f kcm_kwintabbox.lang -f kcm_virtualkeyboard.lang -f kcmkwincommon.lang -f kcmkwincompositing.lang -f kcmkwinscreenedges.lang -f kwin_effects.lang -f kwin_scripting.lang -f kwin_scripts.lang
 %defattr(-,root,root,-)
